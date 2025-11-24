@@ -8,8 +8,9 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const router = require("./router");
 
-const hostname = "127.0.0.1";
-const port = 3000;
+const hostname = process.env.HOSTNAME || "127.0.0.1";
+const port = process.env.PORT || 3000;
+const customFrontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
 
 mongoose.set("strictQuery", true);
 mongoose
@@ -20,17 +21,17 @@ mongoose
 const app = express();
 const server = http.Server(app);
 
-// ✅ Initialize Socket.IO first
+//  Initialize Socket.IO first
 const io = socketIo(server, {
   cors: {
-    origin: "http://*:*",
+    origin: customFrontendUrl,
   },
 });
 
 // Middleware
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: customFrontendUrl,
     credentials: true,
   })
 );
@@ -38,7 +39,7 @@ app.options("*", cors());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use(cookieParser());
 
-// ✅ Now that 'io' exists, you can safely pass it to the router
+//  Now that 'io' exists, you can safely pass it to the router
 app.use(router.init(io));
 
 // Socket.io connection handling
